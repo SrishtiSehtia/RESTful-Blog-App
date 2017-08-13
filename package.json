@@ -12,6 +12,8 @@
     "body-parser": "^1.17.2",
     "ejs": "^2.5.7",
     "express": "^4.15.4",
-    "mongoose": "^4.11.6"
+    "method": "^2.0.0",
+    "mongoose": "^4.11.6",
+    "override": "0.0.1"
   }
 }
