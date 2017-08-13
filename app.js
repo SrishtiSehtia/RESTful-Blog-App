@@ -1,7 +1,8 @@
 var express = require("express"),
     app     = express(),
     mongoose = require("mongoose"),
-    bodyParser = require("body-parser")
+    bodyParser = require("body-parser"),
+    methodOverride = require("method-override")
     
 mongoose.connect("mongodb://localhost/restful_blog_app", {useMongoClient: true});
 
@@ -9,6 +10,7 @@ mongoose.connect("mongodb://localhost/restful_blog_app", {useMongoClient: true})
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
 
 // MONGOOSE/MODEL CONFIG
 var blogSchema = new mongoose.Schema({
@@ -19,12 +21,6 @@ var blogSchema = new mongoose.Schema({
 });
 
 var Blog = mongoose.model("Blog", blogSchema);
-
-Blog.create({
-    title: "Test Blog",
-    image: "http://static.tumblr.com/6e76f577f2a8345667bf6408cec8d3a3/butuvak/nxMord2kl/tumblr_static_f14yin0k6kg0k8cok8cw0k0c4.jpg",
-    body: "Universe and thoughts aligned in space and time..."
-})
 
 // RESTFUL ROUTE
 app.get("/", function(req, res){
@@ -73,6 +69,44 @@ app.get("/blogs/:id", function(req, res){
        }
    })
 });
+
+// EDIT ROUTE
+app.get("/blogs/:id/edit", function(req, res){
+    Blog.findById(req.params.id, function(err, foundBlog){
+        if(err){
+            res.redirect("/blogs");
+        } else {
+            res.render("edit", {blog: foundBlog});
+        }
+    });
+})
+
+// UPDATE ROUTE
+app.put("/blogs/:id", function(req, res){
+    req.body.blog.body = req.sanitize(req.body.blog.body)
+   Blog.findByIdAndUpdate(req.params.id, req.body.blog, function(err, updatedBlog){
+      if(err){
+          res.redirect("/blogs");
+      }  else {
+          res.redirect("/blogs/" + req.params.id);
+      }
+   });
+});
+
+// DELETE ROUTE
+app.delete("/blogs/:id", function(req, res){
+   //destroy blog
+   Blog.findByIdAndRemove(req.params.id, function(err){
+       if(err){
+           res.redirect("/blogs");
+       } else {
+           res.redirect("/blogs");
+       }
+   })
+   //redirect somewhere
+});
+
+
 app.listen(process.env.PORT, process.env.IP, function(){
     console.log("Server is running!")
 });
