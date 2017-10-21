@@ -1,15 +1,16 @@
-var express = require("express"),
-    app     = express(),
-    mongoose = require("mongoose"),
-    bodyParser = require("body-parser"),
-    methodOverride = require("method-override")
-    
-mongoose.connect("mongodb://localhost/restful_blog_app", {useMongoClient: true});
+var bodyParser = require("body-parser"),
+methodOverride = require("method-override"),
+expressSanitizer = require("express-sanitizer"),
+mongoose       = require("mongoose"),
+express        = require("express"),
+app            = express();
 
 // APP CONFIG
+mongoose.connect("mongodb://localhost/restful_blog_app");
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(expressSanitizer());
 app.use(methodOverride("_method"));
 
 // MONGOOSE/MODEL CONFIG
@@ -19,12 +20,12 @@ var blogSchema = new mongoose.Schema({
     body: String,
     created: {type: Date, default: Date.now}
 });
-
 var Blog = mongoose.model("Blog", blogSchema);
 
-// RESTFUL ROUTE
+// RESTFUL ROUTES
+
 app.get("/", function(req, res){
-    res.redirect("/blogs");
+   res.redirect("/blogs"); 
 });
 
 // INDEX ROUTE
@@ -81,6 +82,7 @@ app.get("/blogs/:id/edit", function(req, res){
     });
 })
 
+
 // UPDATE ROUTE
 app.put("/blogs/:id", function(req, res){
     req.body.blog.body = req.sanitize(req.body.blog.body)
@@ -106,7 +108,6 @@ app.delete("/blogs/:id", function(req, res){
    //redirect somewhere
 });
 
-
 app.listen(process.env.PORT, process.env.IP, function(){
-    console.log("Server is running!")
-});
+    console.log("SERVER IS RUNNING!");
+})
